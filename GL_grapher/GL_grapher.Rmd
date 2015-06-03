@@ -1,0 +1,216 @@
+making graphs (Temp Hum, and Volt) from Graphtec Logger data
+========================================================
+```{r eval = TRUE}
+
+#修正/加筆必要箇所  
+#　1日でファイルを複数回保存したときの挙動: CSVがふたつ  
+#　開始時間と終了時間でフィルタリング: 90行付近に加筆
+#  測定期間中の測定器の移動があった場合の処理: 別にファイルが必要
+
+opts_chunk$set(eval = TRUE,
+               error = FALSE,
+               prompt = TRUE,
+               message = FALSE,
+               fig.hight = 20,
+               fig.width = 12,
+               warning = FALSE)
+
+library(tidyr)
+library(data.table)
+```
+
+```{r input, echo = FALSE}
+
+# A: chamA-F @419
+# B: chamK-N @420
+# C: chamA-B @419 or moving
+# D: chamG-J @420
+home.dir()
+setwd(dir = "~/GitHub/BeeLabR/environmental/GL_grapher/")
+
+Memo.file <-
+  dir(pattern = "xlsx")
+Memo.dat <- 
+  Memo.file %>%
+  read.xlsx(sheetIndex = 1, stringsAsFactors = FALSE)
+
+if(length(Memo.file) == 0) print("no memo file found")
+  
+GL_id <- Memo.dat[1, 2]
+Plant <- Memo.dat[2, 2]
+Room <- Memo.dat[3, 2]
+Memo <- Memo.dat[4, 2]
+
+StartDay <- Memo.dat[5, 2] %>% as.numeric
+StartTime <- Memo.dat[6, 2]
+EndDay <- Memo.dat[7, 2] %>% as.numeric
+EndTime <- Memo.dat[8, 2]
+
+Memo.dat1 <-
+  Memo.dat %>%
+  select(-(1:2)) %>%
+  filter(is.used. > 0)
+
+ch.names <- Memo.dat1$Channel
+ch.types <- Memo.dat1$What.
+ch.num <- length(ch.names)
+chamID <- Memo.dat1$Where.
+LightSources <- Memo.dat1$LightSources
+Remarks <- Memo.dat1$Remarks
+
+type.num <- 
+  ch.types %>%
+  table %>%
+  length
+
+types <-
+  ch.types %>%
+  unique
+Memo.dat2 <-
+  Memo.dat1 %>%
+  mutate(Names = paste0(Where., ":", What.)) %>%
+  select(-is.used., -Where., -What., -LightSources, -Remarks)
+
+DataDirs <-
+  dir(paste0("./", GL_id, "/"))
+
+DataDirsUsed <-
+  DataDirs[(as.numeric(DataDirs) > StartDay) & (as.numeric(DataDirs) <= EndDay)]
+
+DataFiles <-
+  dir(paste0("./", GL_id, "/", DataDirsUsed, "/"), full.names = TRUE)
+
+
+if(length(DataFiles) == 0) print("no CSV files detected")
+
+skip_rows <- ifelse(GL_id == "D", yes = 33, no = 23)
+  data <-
+    lapply(1:length(DataFiles), function(x){
+      temp <-
+        fread(input = DataFiles[x], sep = ",", skip = skip_rows, header = TRUE) %>%
+        select(2, (3 + ch.names))
+      setnames(x = temp, c("Time", paste0(chamID, ":", ch.types)))
+      temp %>%
+        return
+      }) %>%
+  rbind_all
+rm(skip_rows)
+```
+
+Information
+-----------
+* calculated at `r Sys.time()`  
+* File name: `r DataFiles`  
+* Logger ID:`r paste0("GLid:", GL_id)`  
+* chamber ID:  cham `r chamID`  
+* for `r Plant` in `r Room` with `r LightSources`.  
+* `r Remarks`  
+
+```{r data_handling}
+DNdet <- function(Hour, ONtime, OFFtime){
+  Hour <- as.numeric(Hour)
+    ifelse(test = (Hour >= ONtime && Hour < OFFtime) , yes = "Day", no = "Night")
+}
+
+data1 <-
+  data %>%
+  separate(col = Time, into = c("Day", "time"), sep = " ", remove = F) %>%  
+  separate(col = time, into = c("Hour", "Min", "Sec"), sep = ":") %>%
+  select(-Day, -Min, -Sec)
+  
+
+data2 <-
+  lapply(1:ch.num, function(x){
+    temp <-
+      Memo.dat2 %>%
+      filter(Channel == ch.names[x])
+    data1 %>%
+      select(Time, Hour, value = (x + 2)) %>%
+      mutate(LightOn = temp$LightOn, LightOff = temp$LightOff,
+             DayNight = Vectorize(DNdet)(Hour, LightOn, LightOff),
+             value = temp$slope * value + temp$intercept,
+             variable = temp$Names) %>%
+      select(Time, DayNight, value, variable) %>%
+      return
+    }) %>%
+    rbind_all
+
+daily_summary <-
+  data2 %>%
+  separate(col = Time, into = c("Day", "Time"), sep = " ", remove = T) %>%
+  select(-Time) %>%
+  group_by(Day, DayNight, variable) %>%
+  summarise_each(funs(mean2, sd2)) %>%
+  mutate(ave = sprintf("%.1f", mean2),
+         sd = sprintf("%.2f", sd2),
+         ave.sd = paste0(ave, "+-", sd, "SD")) %>%
+  select(Day, DayNight, variable, ave, sd, ave.sd) %>%
+  separate(col = variable, into = c("chamID", "log"), sep = ":", remove = T)
+
+span_summary <-
+  data2 %>%
+  select(-Time) %>%
+  group_by(DayNight, variable) %>%
+  summarise_each(funs(mean2, sd2)) %>%
+  mutate(ave = sprintf("%.1f", mean2),
+         sd = sprintf("%.2f", sd2),
+         ave.sd = paste0(ave, "+-", sd, "SD")) %>%
+  select(DayNight, variable, ave, sd, ave.sd) %>%
+  separate(col = variable, into = c("chamID", "log"), sep = ":", remove = T)
+```
+
+
+```{r Graphics}
+data3 <- data2
+data3$Time <- as.POSIXct(strptime(data3$Time, format = "%Y/%m/%d %H:%M:%S"))
+
+
+Graphics <-
+  lapply(1:type.num, function(x){
+    data4 <-
+      data3 %>%
+      separate(col = variable, into = c("chamID", "log"), sep = ":", remove = T) %>%
+      filter(log == types[x])
+  
+    hists <- 
+      data4 %>%
+      ggplot(data = ., aes(x = value, y = ..density.., fill = DayNight)) +
+      theme_bw(20) +
+      geom_histogram(binwidth = 0.1, color = "grey", fill = "cornsilk", alpha = 0.5) +
+      geom_density(color = "grey", alpha = 0.3) +
+      xlab(NULL) +
+      facet_wrap( ~ chamID)
+  
+    timecourse <-
+      data4 %>%
+      ggplot(aes(x = Time, y = value, color = DayNight)) +
+      theme_bw(20) +
+      geom_line(color = "grey") +
+      geom_point(alpha = 0.5) +
+      facet_wrap(~ chamID)
+    
+    list(Histgram = hists, TimeCourse = timecourse) %>%
+      return
+    })
+
+names(Graphics) <- types
+```
+
+```{r Output, warning = FALSE}
+# file.info
+file.info(DataFiles) %>% kable
+file.info(Memo.file) %>% kable
+
+daily_summary %>% kable
+span_summary %>% kable
+
+Graphics
+
+sessionInfo()
+```
+
+```{r eval = FALSE, echo = FALSE}
+home.dir()
+setwd("~/GitHub/BeeLabR/Environmental/GL_grapher/")
+knit2html("./GL_grapher.Rmd", output = paste0("./", str_sub(Memo.file, end = -6), ".html"))
+```
