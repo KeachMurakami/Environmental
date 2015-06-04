@@ -86,11 +86,9 @@ if(length(DataFiles) == 0) print("no CSV files detected")
 skip_rows <- ifelse(GL_id == "D", yes = 33, no = 23)
   data <-
     lapply(1:length(DataFiles), function(x){
-      temp <-
         fread(input = DataFiles[x], sep = ",", skip = skip_rows, header = TRUE) %>%
-        select(2, (3 + ch.names))
-      setnames(x = temp, c("Time", paste0(chamID, ":", ch.types)))
-      temp %>%
+        select(2, (3 + ch.names)) %>%
+        setnames(x = temp, c("Time", paste0(chamID, ":", ch.types))) %>%
         return
       }) %>%
   rbind_all
@@ -131,9 +129,9 @@ data2 <-
              value = temp$slope * value + temp$intercept,
              variable = temp$Names) %>%
       select(Time, DayNight, value, variable) %>%
-      return
-    }) %>%
-    rbind_all
+    return
+  }) %>%
+  rbind_all
 
 daily_summary <-
   data2 %>%
@@ -161,19 +159,17 @@ span_summary <-
 
 
 ```{r Graphics}
-data3 <- data2
-data3$Time <- as.POSIXct(strptime(data3$Time, format = "%Y/%m/%d %H:%M:%S"))
-
 
 Graphics <-
   lapply(1:type.num, function(x){
-    data4 <-
-      data3 %>%
+    data3 <-
+      data2 %>%
+      mutate(Time = as.POSIXct(strptime(Time, format = "%Y/%m/%d %H:%M:%S"))) %>%
       separate(col = variable, into = c("chamID", "log"), sep = ":", remove = T) %>%
       filter(log == types[x])
   
     hists <- 
-      data4 %>%
+      data3 %>%
       ggplot(data = ., aes(x = value, y = ..density.., fill = DayNight)) +
       theme_bw(20) +
       geom_histogram(binwidth = 0.1, color = "grey", fill = "cornsilk", alpha = 0.5) +
@@ -182,7 +178,7 @@ Graphics <-
       facet_wrap( ~ chamID)
   
     timecourse <-
-      data4 %>%
+      data3 %>%
       ggplot(aes(x = Time, y = value, color = DayNight)) +
       theme_bw(20) +
       geom_line(color = "grey") +
