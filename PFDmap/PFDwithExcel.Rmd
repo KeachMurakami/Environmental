@@ -1,0 +1,127 @@
+Spatial distribution mapper
+========================================================
+```{r eval = TRUE, echo = FALSE}
+opts_chunk$set(eval = TRUE,
+               error = FALSE,
+               prompt = TRUE,
+               message = FALSE,
+               fig.hight = 10,
+               fig.width = 12,
+               warning =FALSE)
+```
+
+```{r}
+Interpolate <-
+  function(x){
+    x_col <- zoo::na.approx(x)
+    x_row <- t(zoo::na.approx(t(x)))
+    x_col.row <- 0.5 * (x_col + x_row)
+    x_col.row_col <- zoo::na.approx(x_col.row)
+    x_col.row_col_row <- t(zoo::na.approx(t(x_col.row_col)))
+    return(as.data.frame(x_col.row_col_row))
+    }
+```
+
+```{r}
+
+Colnum <-
+  readline("Enter number of light color. ")  
+chamID <-
+  readline("Enter id of the chamber. ") 
+filePath <- 
+  readline("Enter the full path to data folder. ") 
+
+PFD_summary <-
+  lapply(1:Colnum, function(i){
+  
+  input <-
+    dir(filePath, pattern = "xlsx", full.names = T) %>%
+    read.xlsx(, sheetIndex = i)
+  
+  remarks <-
+    input %>%
+    select(1:2)
+  
+  data <-
+    input %>%
+    select(-(1:4))
+    
+  ColWithValues <-
+    data %>%
+    colwise(length2)(.) %>%
+    unlist != 0
+  
+  ColIDs <-
+    (0:(dim(data)[2]-1) * as.numeric(as.character(remarks[5, 2]))) %>%
+    sprintf(fmt = "%02.0f") %>%
+    paste0(., " cm")
+  
+  RowWithValues <-
+    data %>% t %>% as.data.frame %>%
+    colwise(length2)(.) %>%
+    unlist != 0
+  
+  RowIDs <-
+    ((dim(data)[1]-1):0 * as.numeric(as.character(remarks[5, 2]))) %>%
+    sprintf(fmt = "%02.0f") %>%
+    paste0(., " cm")
+  
+  forGraph <-
+    data[RowWithValues, ColWithValues] %>%
+    Interpolate %>%
+    set_names(ColIDs[ColWithValues]) %>%
+    mutate(Rows = RowIDs[RowWithValues]) %>%
+    melt(id.vars = "Rows")
+  
+  forNums <-
+    data[RowWithValues, ColWithValues] %>%
+    set_names(ColIDs[ColWithValues]) %>%
+    mutate(Rows = RowIDs[RowWithValues]) %>%
+    melt(id.vars = "Rows") %>%
+    set_names(c("Rows", "variable", "numeric"))
+  
+  PFDdata <-
+    merge(forGraph, forNums, by = c("Rows", "variable"))
+  
+  PFDstat <-
+    PFDdata$numeric %>%
+    na.omit %>%
+    adply(.margins = NULL, .fun = c("mean", "sd", "min", "max"))
+  
+  PFDmap <-
+    PFDdata %>%
+    ggplot(aes(x = variable, y = Rows, fill = value)) +
+      geom_point(size = 30, shape = 22, alpha = 1) +
+      scale_fill_gradient(low = "black", high = as.character(remarks[7, 2])) +
+      geom_text(aes(x = variable, y = Rows, label = numeric), color = "yellow", vjust = Inf) +
+      theme_bw(20)
+  
+  Times <- paste0("Measured at ", remarks[1, 2], " ~ ", remarks[2, 2], ".   ")
+  Distance <- paste0("Distance between light and the measured surface: ", remarks[4, 2], ".   ")
+  Measurer <- paste0("Measured with ", remarks[3, 2], ".   ")
+  
+  Lights <- paste0("Light was provided by ", remarks[8, 2], ".   ")
+  Supplier <- paste0("Power supplied by ", remarks[9, 2], " with Amp: ", remarks[10,2], " and Volt: ", remarks[11, 2], ".   ")
+  
+  paste0(Times, Distance, Measurer, Lights, Supplier) %>%
+    list(Info = ., list(data = PFDdata, stats = PFDstat, map = PFDmap))
+  })
+
+meas_infos <- 
+  lapply(PFD_summary, "[[", 1) %>%
+  unlist %>%
+  as.character
+```
+
+`r meas_infos`
+```{r result_info}
+lapply(PFD_summary, "[[", 2)
+filePath %>% dir(pattern = "xlsx", full.names = T) %>% file.info %>% kable
+sessionInfo()
+```
+
+```{r eval = FALSE, echo = FALSE}
+home.dir()
+setwd("~/GitHub/BeeLabR/Environmental/PFDmap/")
+knit2html("./PFDwithExcel.Rmd", output = paste0("./", chamID, "_PFD.html"))
+```
