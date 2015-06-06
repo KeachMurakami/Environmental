@@ -1,6 +1,6 @@
 **GL_Grapher**は[midi LOGGER GL220/820](http://www.graphtec.co.jp/site_instrument/instrument/gl220/)に記録した任意形式のデータを解析するためのツールです。  
 
-記録されたデータをRawData/GL_logs/ロガーのID名 (ここではB) の中に保存してください。   
+記録されたデータをRawData/GL_logs/ロガーのID名 (例ではB) の中に保存してください。   
 入出力例はそれぞれexample.xlsx・example.htmlです。
 xlsxファイルには、測定全般に関する情報とチャンネルごとの校正係数、処理条件を記載します。  
 GL_grapher.Rmdの末尾の**knitr関数**を実行することで、xlsxファイルを読み込み、レポートを出力します。  
