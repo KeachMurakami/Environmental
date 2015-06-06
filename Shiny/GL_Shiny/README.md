@@ -15,13 +15,3 @@ server.Rまたはui.Rを起動し、Rstudioのエディターパネル右上の*
 今後の予定
 * レポートファイルを出力できるように修正 (優先; html or csv?)  
 * 表示範囲内での測定値の平均値・標準偏差を昼夜別で表示 (微優先)  
-
-
-**GL_Grapher** is a tool for summarizing data logged with [midi LOGGER GL220/820](http://www.graphtec.co.jp/site_instrument/instrument/gl220/).  
-
-Put the data files must be contained the folder names after the logger id (e.g. B).   
-Input and output files are example.xlsx and example.html respectively.  
-
-Fill the info about the measurment, calibration factors and the treatments for respective channels in the excel file.  
-
-Output the summary by appling **knitr** at the bottom of the GL_grapher.Rmd.  
