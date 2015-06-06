@@ -1,14 +1,7 @@
 making graphs (Temp Hum, and Volt) from Graphtec Logger data
 ========================================================
 
-
-
 ```r
-#修正/加筆必要箇所  
-#　1日でファイルを複数回保存したときの挙動: CSVがふたつ  
-#　開始時間と終了時間でフィルタリング: 90行付近に加筆
-#  測定期間中の測定器の移動があった場合の処理: 別にファイルが必要
-
 opts_chunk$set(eval = TRUE,
                error = FALSE,
                prompt = TRUE,
@@ -25,8 +18,8 @@ library(data.table)
 
 Information
 -----------
-* calculated at 2015-06-03 21:12:14  
-* File name: ./B/150503//150503-145616_UG.CSV, ./B/150511//150511-152501_UG.CSV  
+* calculated at 2015-06-06 14:30:45  
+* File name: ../RawData/GL_logs/B/150503//150503-145616_UG.CSV, ../RawData/GL_logs/B/150511//150511-152501_UG.CSV  
 * Logger ID:GLid:B  
 * chamber ID:  cham chamA, chamB, chamC, chamD, chamA  
 * for Cucumber in 420 with FL, FL, FL, FL, FL.  
@@ -58,9 +51,9 @@ Information
 +              value = temp$slope * value + temp$intercept,
 +              variable = temp$Names) %>%
 +       select(Time, DayNight, value, variable) %>%
-+       return
-+     }) %>%
-+     rbind_all
++     return
++   }) %>%
++   rbind_all
 > 
 > daily_summary <-
 +   data2 %>%
@@ -89,19 +82,16 @@ Information
 
 
 ```r
-> data3 <- data2
-> data3$Time <- as.POSIXct(strptime(data3$Time, format = "%Y/%m/%d %H:%M:%S"))
-> 
-> 
 > Graphics <-
 +   lapply(1:type.num, function(x){
-+     data4 <-
-+       data3 %>%
++     data3 <-
++       data2 %>%
++       mutate(Time = as.POSIXct(strptime(Time, format = "%Y/%m/%d %H:%M:%S"))) %>%
 +       separate(col = variable, into = c("chamID", "log"), sep = ":", remove = T) %>%
 +       filter(log == types[x])
 +   
 +     hists <- 
-+       data4 %>%
++       data3 %>%
 +       ggplot(data = ., aes(x = value, y = ..density.., fill = DayNight)) +
 +       theme_bw(20) +
 +       geom_histogram(binwidth = 0.1, color = "grey", fill = "cornsilk", alpha = 0.5) +
@@ -110,7 +100,7 @@ Information
 +       facet_wrap( ~ chamID)
 +   
 +     timecourse <-
-+       data4 %>%
++       data3 %>%
 +       ggplot(aes(x = Time, y = value, color = DayNight)) +
 +       theme_bw(20) +
 +       geom_line(color = "grey") +
@@ -132,10 +122,10 @@ Information
 
 
 
-|                                 |    size|isdir | mode|mtime               |ctime               |atime               | uid| gid|uname |grname |
-|:--------------------------------|-------:|:-----|----:|:-------------------|:-------------------|:-------------------|---:|---:|:-----|:------|
-|./B/150503//150503-145616_UG.CSV | 2946316|FALSE |  644|2015-06-03 20:51:19 |2015-06-03 21:04:39 |2015-06-03 21:12:14 | 501|  20|keach |staff  |
-|./B/150511//150511-152501_UG.CSV |  353292|FALSE |  644|2015-06-03 20:51:19 |2015-06-03 21:04:39 |2015-06-03 21:12:14 | 501|  20|keach |staff  |
+|                                                  |    size|isdir | mode|mtime               |ctime               |atime               | uid| gid|uname |grname |
+|:-------------------------------------------------|-------:|:-----|----:|:-------------------|:-------------------|:-------------------|---:|---:|:-----|:------|
+|../RawData/GL_logs/B/150503//150503-145616_UG.CSV | 2946316|FALSE |  644|2015-06-03 20:51:19 |2015-06-03 21:04:39 |2015-06-06 14:30:45 | 501|  20|keach |staff  |
+|../RawData/GL_logs/B/150511//150511-152501_UG.CSV |  353292|FALSE |  644|2015-06-03 20:51:19 |2015-06-03 21:04:39 |2015-06-06 14:30:45 | 501|  20|keach |staff  |
 
 ```r
 > file.info(Memo.file) %>% kable
@@ -145,7 +135,7 @@ Information
 
 |             |  size|isdir | mode|mtime               |ctime               |atime               | uid| gid|uname |grname |
 |:------------|-----:|:-----|----:|:-------------------|:-------------------|:-------------------|---:|---:|:-----|:------|
-|example.xlsx | 32014|FALSE |  644|2015-06-03 20:51:19 |2015-06-03 21:04:39 |2015-06-03 21:12:14 | 501|  20|keach |staff  |
+|example.xlsx | 32014|FALSE |  644|2015-06-03 20:51:19 |2015-06-03 21:16:12 |2015-06-06 14:30:45 | 501|  20|keach |staff  |
 
 ```r
 > daily_summary %>% kable
@@ -325,23 +315,26 @@ Information
 ## [8] base     
 ## 
 ## other attached packages:
-##  [1] data.table_1.9.4   tidyr_0.2.0        stringr_0.6.2     
-##  [4] agricolae_1.2-1    GGally_0.5.0       magrittr_1.5      
-##  [7] gridExtra_0.9.1    foreach_1.4.2      gtable_0.1.2      
-## [10] knitr_1.9          xlsx_0.5.7         xlsxjars_0.6.1    
-## [13] rJava_0.9-6        reshape2_1.4.1     dplyr_0.4.1       
-## [16] plyr_1.8.1         mvtnorm_1.0-2      RColorBrewer_1.1-2
-## [19] gcookbook_1.0      ggplot2_1.0.0      MASS_7.3-39       
+##  [1] tidyr_0.2.0        data.table_1.9.4   shiny_0.11.1      
+##  [4] stringr_0.6.2      agricolae_1.2-1    GGally_0.5.0      
+##  [7] magrittr_1.5       gridExtra_0.9.1    foreach_1.4.2     
+## [10] gtable_0.1.2       knitr_1.9          xlsx_0.5.7        
+## [13] xlsxjars_0.6.1     rJava_0.9-6        reshape2_1.4.1    
+## [16] dplyr_0.4.1        plyr_1.8.1         mvtnorm_1.0-2     
+## [19] RColorBrewer_1.1-2 gcookbook_1.0      ggplot2_1.0.0     
+## [22] MASS_7.3-39       
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] DBI_0.3.1        LearnBayes_2.15  Matrix_1.1-5     Rcpp_0.11.4     
-##  [5] assertthat_0.1   boot_1.3-15      chron_2.3-45     cluster_2.0.1   
-##  [9] coda_0.16-1      codetools_0.2-10 colorspace_1.2-4 combinat_0.0-8  
-## [13] deldir_0.1-7     digest_0.6.8     evaluate_0.5.5   formatR_1.0     
-## [17] iterators_1.0.7  klaR_0.6-12      labeling_0.3     lattice_0.20-29 
-## [21] lazyeval_0.1.10  munsell_0.4.2    nlme_3.1-120     parallel_3.1.2  
-## [25] proto_0.3-10     reshape_0.8.5    scales_0.2.4     sp_1.0-17       
-## [29] spdep_0.5-83     splines_3.1.2    stringi_0.4-1    tools_3.1.2
+##  [1] DBI_0.3.1        LearnBayes_2.15  Matrix_1.1-5     R6_2.0.1        
+##  [5] RJSONIO_1.3-0    Rcpp_0.11.4      assertthat_0.1   boot_1.3-15     
+##  [9] chron_2.3-45     cluster_2.0.1    coda_0.16-1      codetools_0.2-10
+## [13] colorspace_1.2-4 combinat_0.0-8   deldir_0.1-7     digest_0.6.8    
+## [17] evaluate_0.5.5   formatR_1.0      htmltools_0.2.6  httpuv_1.3.2    
+## [21] iterators_1.0.7  klaR_0.6-12      labeling_0.3     lattice_0.20-29 
+## [25] lazyeval_0.1.10  mime_0.2         munsell_0.4.2    nlme_3.1-120    
+## [29] parallel_3.1.2   proto_0.3-10     reshape_0.8.5    rmarkdown_0.5.1 
+## [33] scales_0.2.4     sp_1.0-17        spdep_0.5-83     splines_3.1.2   
+## [37] stringi_0.4-1    tools_3.1.2      xtable_1.7-4     yaml_2.1.13
 ```
 
 

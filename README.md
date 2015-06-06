@@ -1,6 +1,9 @@
 # Environmental 
 Data analyses tools for our laboratory.
 
+## RawData
+All raw data **must** be contained in this folder.  
+
 ## GL_grapher
 Summarize timecourse data (temperature, humidity, voltage...) from Data logger (GL220/820, Graphtech)
 

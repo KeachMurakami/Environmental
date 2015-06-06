@@ -1,12 +1,6 @@
 making graphs (Temp Hum, and Volt) from Graphtec Logger data
 ========================================================
 ```{r eval = TRUE}
-
-#修正/加筆必要箇所  
-#　1日でファイルを複数回保存したときの挙動: CSVがふたつ  
-#　開始時間と終了時間でフィルタリング: 90行付近に加筆
-#  測定期間中の測定器の移動があった場合の処理: 別にファイルが必要
-
 opts_chunk$set(eval = TRUE,
                error = FALSE,
                prompt = TRUE,
@@ -72,13 +66,13 @@ Memo.dat2 <-
   select(-is.used., -Where., -What., -LightSources, -Remarks)
 
 DataDirs <-
-  dir(paste0("./", GL_id, "/"))
+  dir(paste0("../RawData/GL_logs/", GL_id, "/"))
 
 DataDirsUsed <-
   DataDirs[(as.numeric(DataDirs) > StartDay) & (as.numeric(DataDirs) <= EndDay)]
 
 DataFiles <-
-  dir(paste0("./", GL_id, "/", DataDirsUsed, "/"), full.names = TRUE)
+  dir(paste0("../RawData/GL_logs/", GL_id, "/", DataDirsUsed, "/"), full.names = TRUE)
 
 
 if(length(DataFiles) == 0) print("no CSV files detected")
@@ -88,7 +82,7 @@ skip_rows <- ifelse(GL_id == "D", yes = 33, no = 23)
     lapply(1:length(DataFiles), function(x){
         fread(input = DataFiles[x], sep = ",", skip = skip_rows, header = TRUE) %>%
         select(2, (3 + ch.names)) %>%
-        setnames(x = temp, c("Time", paste0(chamID, ":", ch.types))) %>%
+        setnames(c("Time", paste0(chamID, ":", ch.types))) %>%
         return
       }) %>%
   rbind_all

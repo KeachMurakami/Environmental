@@ -16,16 +16,16 @@ shinyUI(pageWithSidebar(
 
   # Sidebar with a slider input for number of bins
     sidebarPanel(
-      fileInput('file1', 'Choose file to upload',
+      fileInput('file1', 'Choose and upload info.file',
                 accept = c(
                   '.XLS',
                   '.XLSX',
                   '.xls',
                   '.xlsx'
                 )),
-      selectInput("GL_id", label = "GL-ID", selected = "B",
-                  choices = c("A" = "A (chamA-F)", "B", "C", "D")),
-      dateRangeInput("FromTo", label = "Log span", format = "yymmdd",
+      selectInput("GL_id", label = "Choose logger ID", selected = "B (chamK-N)",
+                  choices = c("A (chamA-F)" = "A", "B (chamK-N)" = "B", "C (chamG-J)" = "C", "D")),
+      dateRangeInput("FromTo", label = "Logging span", format = "yymmdd",
                      start = "2015-04-030", end = "2015-05-10",
                      min = Sys.Date() - 365, max = Sys.Date()),
       submitButton()
