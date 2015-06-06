@@ -1,4 +1,6 @@
-**GL_Shiny**は[midi LOGGER GL220/820](http://www.graphtec.co.jp/site_instrument/instrument/gl220/)に記録した任意形式のデータをShinyを経由してオンラインで解析するためのツールです。  
+**GL_Shiny**は[midi LOGGER GL220/820](http://www.graphtec.co.jp/site_instrument/instrument/gl220/)に記録した任意形式のデータをShinyを経由してオンラインで可視化するためのツールです。  
+LAN環境であれば、runApp(host = "0.0.0.0") としてサーバマシンでShinyを起動した後に、
+リモートマシンのブラウザにサーバマシンのIPアドレスとポート番号 (ペイン左上の4桁の数字) を入力することでオンラインでの解析が可能です。
 
 記録されたデータをRawData/GL_logs/ロガーのID名 (ここではB) の中に保存してください。   
 server.Rまたはui.Rを起動し、Rstudioのエディターパネル右上の**Run app**をクリックしてください。  
