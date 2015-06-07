@@ -1,6 +1,3 @@
-# Environmental 
-Data analyses tools for our laboratory.
-
 ## RawData
 All raw data **must** be contained in this folder.  
 
