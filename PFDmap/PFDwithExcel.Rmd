@@ -10,6 +10,13 @@ opts_chunk$set(eval = TRUE,
                warning =FALSE)
 ```
 
+```{r eval = FALSE, echo = FALSE}
+  filePath <- 
+    readline("Enter the path to data file. ") 
+  HomeGithub()
+  knitr::knit2html("./environmental/PFDmap/PFDwithExcel.Rmd", output = paste0(filePath, "/", chamID, "_PFD.html"))
+```
+
 ```{r}
 Interpolate <-
   function(x){
@@ -107,25 +114,17 @@ PFD_summary <-
              ) %>%
   mutate(ColorCode = paste0(remarks[7, 2], "@", chamID)) %>%
   list(Info = ., list(data = PFDdata, stats = PFDstat, map = PFDmap))
-  }) %>%
+  })
 
 meas_infos <- 
   lapply(PFD_summary, "[[", 1) %>%
-  rbind_all %>%
-  kable
+  rbind_all
 ```
 
-`r meas_infos`
+`r kable(meas_infos)`
 ```{r result_info}
 lapply(PFD_summary, "[[", 2) %>%
   set_names(meas_infos$ColorCode)
 filePath %>% dir(pattern = "xlsx", full.names = T) %>% file.info %>% kable
 sessionInfo()
-```
-
-```{r eval = FALSE, echo = FALSE}
-  filePath <- 
-    readline("Enter the path to data file. ") 
-  home.dir()
-  knitr::knit2html("./environmental/PFDwithExcel.Rmd", output = paste0(filePath, "/", chamID, "_PFD.html"))
 ```
