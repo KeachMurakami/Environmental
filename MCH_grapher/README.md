@@ -10,7 +10,7 @@
 Rmdの末尾の`r markdown::render()`を実行することで、入力ファイル (example.xlsx)を読み込み、htmlレポート(example.html)を出力します。  
 
 
-サンプルデータ: `Environmental/RawData/MCH_logs`  
+サンプルデータ: `/Environmental/RawData/MCH_logs`  
 校正データ: `/Environmental/calibration/MCH.csv`
 
 
