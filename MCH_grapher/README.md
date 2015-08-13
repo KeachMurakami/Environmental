@@ -26,7 +26,7 @@ example.xlsxをコピペして使い回してください。
 
 右側がMCHのIDと測定位置、処理などの条件
 
-|MCH.id | is.used?|Where? |LightSources | LightOn| LightOff|Remarks |
+|MCH.id | is.used?|Where? |LightSources | LightOn| LightOff|Remarks |
 |:------|--------:|:------|:------------|-------:|--------:|:-------|
 |01     |        1|PlaceA |LightA       |       7|       23|        |
 |02     |        1|PlaceB |LightB       |       7|       23|        |
