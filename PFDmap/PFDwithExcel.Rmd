@@ -39,10 +39,15 @@ chamID <-
 PFD_summary <-
    lapply(1:Colnum, function(i){
   
-  input <-
-    dir(filePath, pattern = "xlsx", full.names = T) %>%
-    read.xlsx(, sheetIndex = i)
+ file_temp <-
+    dir(filePath, pattern = "xlsx", full.names = T)
   
+  if(length(file_temp) != 1){
+    input <-
+      file.choose() %>%
+      read.xlsx(., sheetIndex = i)
+  } else input <- read.xlsx(file_temp, sheetIndex = i)
+    
   remarks <-
     input %>%
     select(1:2)
