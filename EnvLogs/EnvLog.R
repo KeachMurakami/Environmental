@@ -47,22 +47,31 @@ lapply(1:nrow(ExptInfo), function(X) {
       Hourly_ls[[X]] <<-
         full_join(temps$Hourly, RH_CO2s$Hourly, by = c("DayNight", "Day", "Hour", "DayHour", "Time"))
 
-      
       temps$Daily %<>%
         rename(GL_ID = ID, GL_CH = ch)
       RH_CO2s$Daily %<>%
         rename(MCH_ID = ID)
-      
       Daily_ls[[X]] <<-
         full_join(temps$Daily, RH_CO2s$Daily, by = c("DayNight", "Day", "Time"))
     }
 })
 
+#### input fin #####
+
+#### data handling ####
+
+# 先に場所情報を乗っける？
+chamset <- function(GL_ID, GL_CH) {
+  ExptInfo %>%
+    filter(GL_id == GL_ID, GL_ch == GL_CH) %>%
+    .$ChamberID
+}
 
 
-
-Infos <-
-  ExptSetting %>%
-  select()
-select
-ExptSetting
+Hourly_ls %>%
+  rbind_all %>%
+  mutate(cham = Vectorize(chamset)(GL_ID, GL_CH)) %>%
+  melt2(id.vars = )
+  ggplot(aes(x = Time, y = MeanTemp.x, col = ID_CH)) +
+  geom_ribbon(aes(ymin = MeanTemp.x - SDTemp.x, ymax = MeanTemp.x + SDTemp.x, fill = ID_CH), alpha = .1) +
+  geom_line()
