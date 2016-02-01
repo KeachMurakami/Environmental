@@ -20,8 +20,6 @@ opts_chunk$set(eval = TRUE,
 ```{r handling_and_output}
 if(OFFline) print("\n\n\n\n connect internet for read the function \n\n\n\n")
 
-# read function
-# source_url("https://raw.githubusercontent.com/KeachMurakami/Environmental/master/EnvLogs/EnvLog.R")
 
 readline("facet by chamber = T or F?: ") %>%
   EnvLog(EnvInfo, by_cham_facet = .)
@@ -35,6 +33,9 @@ EnvInfo <- file.choose()
 EnvInfo %>%
   dirname %>%
   setwd
+
+# read function
+# source_url("https://raw.githubusercontent.com/KeachMurakami/Environmental/master/EnvLogs/EnvLog.R")
 
 knitr::knit2html(input = "~/GitHub/BeeLabR/Environmental/EnvLogs/EnvLog.Rmd",
                  output = paste0(basename(EnvInfo), ".html"),
