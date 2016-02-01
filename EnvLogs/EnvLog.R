@@ -22,7 +22,7 @@ EnvLog <-
     }
     
     
-    lapply(1:nrow(ExptInfo), function(X) {
+    for(X in 1:nrow(ExptInfo)){
       
       get_cham <- function(df){
         if(is.data.frame(df)) {
@@ -75,7 +75,7 @@ EnvLog <-
             full_join(temps$Span, RH_CO2s$Span, by = c("DayNight", "cham"))
           
         }
-    })
+    }
     
     #### data input fin #####
     
