@@ -1,0 +1,43 @@
+---
+title: "EnvLog"
+author: "KeachMurakami"
+date: "Febrary 1, 2016"
+output:
+  html_document:
+    css: Users/keach/Dropbox/R/markdown.css
+---
+
+```{r setup, eval = TRUE, echo = FALSE}
+opts_chunk$set(eval = TRUE,
+               error = FALSE,
+               prompt = FALSE,
+               message = FALSE,
+               echo = TRUE,
+               fig.hight = 4,
+               fig.width = 10)
+```
+
+```{r handling_and_output}
+if(OFFline) print("\n\n\n\n connect internet for read the function \n\n\n\n")
+
+
+readline("facet by chamber = T or F?: ") %>%
+  EnvLog(EnvInfo, by_cham_facet = .)
+
+file.info(EnvInfo)
+sessionInfo()
+```
+
+```{r eval = F}
+EnvInfo <- file.choose()
+EnvInfo %>%
+  dirname %>%
+  setwd
+
+# read function
+# source_url("https://raw.githubusercontent.com/KeachMurakami/Environmental/master/EnvLogs/EnvLog.R")
+
+knitr::knit2html(input = "~/GitHub/BeeLabR/Environmental/EnvLogs/EnvLog.Rmd",
+                 output = paste0(basename(EnvInfo), ".html"),
+                 encoding = "UTF-8")
+```

@@ -5,8 +5,8 @@ EnvLog <-
     
     ExptInfo <-
       read.xlsx(files, 1, startRow = 2, stringsAsFactors = FALSE) %>%
-      na.omit
-    
+      filter(!is.na(ExptCode))
+
     #### data input  #####
     Hist_ls <- as.list(numeric(nrow(ExptInfo)))
     Hourly_ls <- as.list(numeric(nrow(ExptInfo)))
@@ -22,7 +22,7 @@ EnvLog <-
     }
     
     
-    lapply(1:nrow(ExptInfo), function(X) {
+    for(X in 1:nrow(ExptInfo)){
       
       get_cham <- function(df){
         if(is.data.frame(df)) {
@@ -75,7 +75,7 @@ EnvLog <-
             full_join(temps$Span, RH_CO2s$Span, by = c("DayNight", "cham"))
           
         }
-    })
+    }
     
     #### data input fin #####
     
@@ -90,7 +90,7 @@ EnvLog <-
             select(cham, Time, DayNight, GL_ID, GL_CH, MCH_ID, v = ends_with(variables)) %>%
             ggplot(aes(x = Time, y = v1, fill = cham)) +
             geom_ribbon(aes(ymin = v1 - v2, ymax = v1 + v2), alpha = .1) +
-            geom_point(aes(col = cham), alpha = .5) +
+            geom_point(aes(col = DayNight), alpha = .5) +
             ggtitle(variables)
           
           if(by_cham) {
@@ -108,7 +108,7 @@ EnvLog <-
             Daily_ls %>%
             rbind_all2 %>%
             select(cham, Time, DayNight, GL_ID, GL_CH, MCH_ID, v = ends_with(variables)) %>%
-            ggplot(aes(x = Time, y = v1, col = cham)) +
+            ggplot(aes(x = Time, y = v1, col = DayNight)) +
             geom_errorbar(aes(ymin = v1 - v2, ymax = v1 + v2), alpha = .1) +
             geom_point(alpha = .5) +
             ggtitle(variables)
