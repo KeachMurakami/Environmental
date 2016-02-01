@@ -5,8 +5,8 @@ EnvLog <-
     
     ExptInfo <-
       read.xlsx(files, 1, startRow = 2, stringsAsFactors = FALSE) %>%
-      na.omit
-    
+      filter(!is.na(ExptCode))
+
     #### data input  #####
     Hist_ls <- as.list(numeric(nrow(ExptInfo)))
     Hourly_ls <- as.list(numeric(nrow(ExptInfo)))
