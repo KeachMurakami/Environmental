@@ -13,11 +13,11 @@ ArdOutput <-
 Light <- "FR"
 Ard_graph(Light.Col = Light)
 
-Ard_graph <- function(Light.Col){
+Ard_graph <- function(Light.Col){	
   slope <-
-    switch(Light.Col, B =  0.31703, R = 0.28209, FR = 0.286312)
+    switch(Light.Col, B =  0.31703, R = 0.28209, FR = 0.286312, W = 0.071537363)
   intercept <-
-    switch(Light.Col, B =  4.95123, R = -1.34458, FR = -0.479106)
+    switch(Light.Col, B =  4.95123, R = -1.34458, FR = -0.479106, W = 0.037060845)
   
   
   volt <-
